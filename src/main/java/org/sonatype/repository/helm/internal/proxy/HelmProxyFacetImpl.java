@@ -114,6 +114,14 @@ public class HelmProxyFacetImpl
     }
   }
 
+  /**
+   * 添加元数据
+   * @param path
+   * @param content
+   * @param assetKind
+   * @return
+   * @throws IOException
+   */
   private Content putMetadata(final String path, final Content content, final AssetKind assetKind) throws IOException {
     StorageFacet storageFacet = facet(StorageFacet.class);
     try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), HASH_ALGORITHMS)) {
@@ -142,6 +150,14 @@ public class HelmProxyFacetImpl
     return helmDataAccess.saveAsset(tx, asset, metadataContent, payload);
   }
 
+  /**
+   * 添加组建
+   * @param content
+   * @param fileName
+   * @param assetKind
+   * @return
+   * @throws IOException
+   */
   private Content putComponent(final Content content,
                                final String fileName,
                                final AssetKind assetKind) throws IOException {
@@ -152,6 +168,16 @@ public class HelmProxyFacetImpl
     }
   }
 
+  /**
+   * 创建或保存组建
+   * @param helmAttributes
+   * @param fileName
+   * @param componentContent
+   * @param payload
+   * @param assetKind
+   * @return
+   * @throws IOException
+   */
   @TransactionalStoreBlob
   protected Content doCreateOrSaveComponent(final HelmAttributes helmAttributes,
                                             final String fileName,

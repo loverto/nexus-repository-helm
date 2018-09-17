@@ -51,6 +51,12 @@ public class HelmAttributeParser
 
   }
 
+  /**
+   * 从输入流中获取属性
+   * @param inputStream
+   * @return
+   * @throws IOException
+   */
   public HelmAttributes getAttributesFromInputStream(final InputStream inputStream) throws IOException {
     try (InputStream is = tgzParser.getChartFromInputStream(inputStream)) {
       Map<String, Object> attributes = yamlParser.load(is);

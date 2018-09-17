@@ -61,6 +61,12 @@ public class IndexYamlAbsoluteUrlRewriter
 
   private StorageFacet storageFacet;
 
+  /**
+   * 从索引Yaml中删除Url并写入Temp Blob
+   * @param index
+   * @param repository
+   * @return
+   */
   public TempBlob removeUrlsFromIndexYamlAndWriteToTempBlob(final TempBlob index,
                                                             final Repository repository)
   {
@@ -70,6 +76,11 @@ public class IndexYamlAbsoluteUrlRewriter
         this::createTempBlob).read();
   }
 
+  /**
+   * 更新url
+   * @param is 输入流
+   * @param os 输出流
+   */
   private void updateUrls(final InputStream is,
                           final OutputStream os)
   {
@@ -78,9 +89,12 @@ public class IndexYamlAbsoluteUrlRewriter
       Yaml yaml = new Yaml();
       Emitter emitter = new Emitter(writer, new DumperOptions());
       boolean rewrite = false;
+      //转换输入流
       for (Event event : yaml.parse(reader)) {
+        //逐行解析yaml配置文件
         if (event instanceof ScalarEvent) {
           ScalarEvent scalarEvent = (ScalarEvent) event;
+          //如果是url则重写url路径，
           if (rewrite) {
             event = maybeSetAbsoluteUrlAsRelative(scalarEvent);
           }
@@ -102,12 +116,22 @@ public class IndexYamlAbsoluteUrlRewriter
     }
   }
 
+  /**
+   * 也许将Absolute Url设置为Relative
+   * @param scalarEvent
+   * @return
+   * @throws MalformedURLException
+   */
   private Event maybeSetAbsoluteUrlAsRelative(ScalarEvent scalarEvent) throws MalformedURLException {
     String oldUrl = scalarEvent.getValue();
     try {
       URI uri = new URIBuilder(oldUrl).build();
       if (uri.isAbsolute()) {
         String fileName = uri.getPath();
+        //remove leading "/" to avoid URI missing, by ref: https://github.com/helm/helm/issues/3878
+        log.debug("Before:{}", fileName);
+        fileName = fileName.startsWith("/") ? fileName.substring(1) : fileName;
+        log.debug("After:{}", fileName);
         scalarEvent = new ScalarEvent(scalarEvent.getAnchor(), scalarEvent.getTag(),
             scalarEvent.getImplicit(), fileName, scalarEvent.getStartMark(),
             scalarEvent.getEndMark(), scalarEvent.getStyle());
